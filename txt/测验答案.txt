@@ -1,0 +1,134 @@
+说明：11个大题，每题包含5个小题，满分36分，每错一小题扣一分（关键字错误，语法错误、表名错误 、列名错误、条件错误都不得分）
+36分
+1.（1）创建表空间tbs，包含一个数据文件tbs01.dbf，初始大小20M;
+create tablespace tbs datafile 'tbs01.dbf' size 20M;
+（2）修改数据文件，将tbs01.dbf修改成50M；
+alter database datafile 'tbs01.dbf' resize 50M;
+（3）修改数据文件，将tbs01.dbf设成自动扩展；
+alter database datafile 'tbs01.dbf' autoextend on next 10M;
+（4）修改表空间tbs，增加一个数据文件tbs02.dbf，大小20M；
+alter tablespace tbs add datafile 'tbs02.dbf' size 20M;
+（5）删除表空间tbs。
+drop tablespace tbs including contents and datafiles;
+
+2.（1）创建用户u01，密码u01，默认持久表空间users；
+create user u01 identified by u01 default tablespace users;
+（2）修改用户u01，将密码改成xxx；
+alter user u01 identified by xxx;
+（3）修改用户u01，指定在表空间users上最大使用10M；
+alter user u01 quota 10M on users;
+（4）修改用户u01，将账户解锁；
+alter user u01 account unlock;
+（5）删除用户u01。
+drop user u01 cascade;
+
+
+3.假设存在用户u01：
+（1）授予用户u01创建会话权限；
+grant create session to u01;
+（2）授予用户u01创建表权限；
+grant create table to u01;
+（3）授予用户u01 dba角色；
+grant dba to u01;
+（4）回收用户u01创建会话和创建表权限；
+revoke create session,create table from u01;
+（5）回收用户u01 dba角色。
+revoke dba from u01;
+
+4.（1）创建表t1，包含id 数字型，name字符型，age数字型；
+create table t1 (id number,name varchar2(10),age number);
+（2）修改表t1，增加列gender字符型；
+alter table t1 add gender varchar2(20);
+（3）修改表t1，将name列修改为varchar2(100);
+alter table t1 modify (name varchar2(100));
+（4）修改表t1，删除列gender；
+alter table t1 drop(gender);
+（5）删除表t1。
+drop table t1;
+
+5.假设存在表t1(id number,name varchar2(20),age number)：
+（1）向t1表插入数据，编号101，姓名张三丰，年龄20；
+insert into t1 values(101,'张三丰',20);
+（2）向t1表插入数据，编号102，姓名王芳，年龄18；
+insert into t1 values(102,'王芳',18);
+（3）修改编号101的数据，将年龄改成21；
+update t1 set age=21 where id=101;
+（4）修改所有姓王的数据，将年龄改成19；
+update t1 set age=19 where name like '王%';
+（5）删除所有年龄不空的数据。
+delete from t1 where age is not null;
+
+6.假设存在表t1(id number,name varchar2(20),age number,iden varchar2(20),dno number)：
+（1）在id上增加主键；
+alter table t1 add primary key(id);
+（2）在name上增加非空约束；
+alter table t1 modify (name not null);
+（3）在age上增加检查约束，要求年龄20至30之间；
+alter table t1 add check(age between 20 and 30);
+（4）在iden增加一个唯一约束；
+alter table t1 add unique(iden);
+（5）在dno上增加外键约束，引用dept表的did列。
+alter table t1 add foreign key(dno) references dept(did);
+
+7. 假设存在表t1(id number,name varchar2(20),age number,iden varchar2(20),dno number)：
+（1）查询所有数据；
+select * from t1;
+（2）查询所有年龄大于30的数据；
+select * from t1 where age>30;
+（3）查询所有iden不空的数据；
+select * from t1 where iden is not null;
+（4）查询所有姓张的数据；
+select * from name like '张%';
+（5）查询dno为1的姓名和年龄。
+select name,age from t1 where dno=1;
+
+8. 假设存在表t1(id number,name varchar2(20),age number,iden varchar2(20),dno number)：
+（1）查询数据总行数；
+select count(*) from t1;
+（2）查询不同年龄的人数，输出年龄和人数；
+select age,count(*) from t1 group by age;
+（3）查询不同部门的人数，要求输出部门编号和人数；
+select dno,count(*) from t1 group by dno;
+（4）查询不同部门不同年龄的人数，要求输出部门编号、年龄和人数；
+select dno,age,count(*) from t1 group by dno,age;
+（5）查询部门人数大于10人的部门编号和人数。
+select dno,count(*) from t1 group by dno having count(*)>10;
+
+9. 假设存在教师表teacher(id number,name varchar2(20),age number,dno number)，院系表dept(dno number,dname varchar2(20))：
+（1）查询所有教师的姓名和所属院系名称；
+select name,dname from teacher,dept where teacher.dno=dept.dno;
+（2）查询部门名称和部门人数；
+select dname,count(*) from teacher,dept where teacher.dno=dept.dno group by dname;
+（3）查询年龄最小的教师，输出教师名和年龄；
+select name,age from teacher where age=(select min(age) from teacher);
+（4）查询每个部门年龄最小的教师，输出部门名、教师名和年龄。
+select dname,name,age
+from teacher,dept
+where teacher.dno=dept.dno and
+(dept.dno,dept.age) in (select dno,min(age) from teacher group by dno)
+
+
+10. 假设存在表t1(id number,name varchar2(20),age number,iden varchar2(20),dno number)：
+（1）在id上创建一个唯一索引idx1；
+create unique index idx1 on t1(id);
+（2）在age列上创建一个位图索引idx2；
+create bitmap index idx2 on t1(age);
+（3）重建索引idx1；
+alter table idx1 rebuild;
+（4）删除索引idx1；
+drop index idx1;
+（5）删除索引idx2。
+drop index idx2;
+
+11. 假设存在表t1(id number,name varchar2(20),age number,iden varchar2(20),dno number)：
+（1）创建视图v1显示t1中所有的数据；
+create view v1 as select * from t1;
+（2）创建视图v2显示t1中年龄大于20的数据，且带检查约束；
+create view v2 as select * from t1 where age>20 with check option;
+（3）创建一个序列seq，从5开始，每次递增5；
+create sequence seq start with 5 increment by 5;
+（4）给表t1创建同义词s1；
+create synonym s1 for t1;
+（5）创建一个临时表tmp1，包含id和name。
+create global temporary table tmp1(id number,name varchar2(20));
+

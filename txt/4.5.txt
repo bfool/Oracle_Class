@@ -1,0 +1,188 @@
+用户权限：
+1）创建用户u1，密码u1，缺省
+表空间users
+create user u1
+identified by u1
+default tablespace users;
+2）修改u1，在users上空间使用无限制
+alter user u1
+quota unlimited on users;
+3）查询用户u1包含的系统权限
+select * from dba_sys_privs
+where grantee='U1';
+4）授予u1创建表、创建会话权限
+grant create session,
+create table to u1;
+5）回收u1的所有系统权限
+revoke create table,create session
+ from u1;
+6）删除用户u1
+drop user u1 cascade;
+
+1、SQL分类
+sql:结构化查询语言，标准
+分类
+ddl：数据定义语言，数据库对象操作
+  （创建、删除、修改）
+  create table
+  alter table
+  drop table 
+dml: 数据操纵语言，主要是对象上
+  的数据操作  
+  insert
+  update
+  delete
+dql：查询语句
+  select
+dcl: 数据控制语言
+  grant    
+  revoke
+tcl: 事务控制语句
+  commit
+  rollback  
+
+2、事务
+事务是指完成一个业务操作包含的
+多个sql的整体，要么都执行成功，
+要么恢复都修改前状态。
+
+开始：
+   执行任何一条dml语句，将开启一个
+新事务。
+结束：
+   执行commit
+   执行rollback
+   执行任何一条ddl语句，触发一个
+   隐含事务commit
+   执行任何一条dcl语句，触发一个
+   隐含事务commit
+   
+create table t01(id number);
+insert into t01 values(1);   
+select * from t01;
+
+create table t02(id number);
+
+开发：
+conn.setAutoCommit(false);
+
+conn.commit();
+
+3、数据类型
+3.1 字符型：
+char(n [byte|char])：2000字节
+  char(2000char)
+  定长，插入数据小于定义长度补空格
+*** varchar2(n [byte|char]): 最长
+  4000  字节
+  变长，插入数据小于定义长度，存储
+  以实际数据分配空间
+
+***clob: 字符类型大对象
+   最大128t
+
+3.2 数值型
+number(p,s) : p代表精度(38位)，
+  s是小数位数
+  精度：小数点左右有效数字的个数
+  number(5,2)
+3.3 日期  
+date：表达年月日时分秒
+timestamp:表达年月日时分秒.毫秒
+3.4 二进制大对象
+blob: 二进制，存图片、声音、电影
+
+4、表操作
+4.1 查询
+  select * from user_tables
+  where table_name='T1';
+  select * from user_tab_columns
+  where table_name='STUDENT';
+4.2 创建表
+create table 表名(
+列名 列类型
+[,...]
+)[tablespace xxx];
+
+创建学生表(学号、姓名、年龄，
+出生日期);
+
+create table student(
+no varchar2(10),
+name varchar2(10),
+age number,
+birth date
+);
+
+4.3 修改
+增加列
+alter table 表名
+add (列名 列类型[,...]);
+alter table student
+add (phone varchar2(11));
+修改列类型
+alter table 表名
+modify (列名 列类型[,...]);
+alter table student
+modify (phone number);
+删除列
+alter table 表名
+drop (列名[,..]);
+alter table student
+drop (phone,age);
+表名
+rename 原表名 to 新表名;
+rename student to stu;
+
+4.4 删除
+drop table 表名
+[cascade constraints];
+cascade constraints：级联删除约束
+
+5、数据操作
+5.1 插入数据
+insert into 表名[列名,...]
+values(列值,....)
+
+表名后不指定列，则按照创建表时
+列顺序依次给值
+表名后指定列，则按照指定的
+列顺序依次给值
+列值： 
+  数字直接写
+  字符需要单引号括起来
+  日期：
+     to_date('1997-10-01',
+      'yyyy-mm-dd')
+select * from stu;
+alter table stu add (age number);      
+1,张三,1997-10-01,20
+insert into stu
+values(1,'张三',
+to_date('1997-10-01','yyyy-mm-dd'),
+20);
+
+2 李四
+insert into stu(no,name)
+values(2,'李四');
+commit;
+5.2 修改数据
+update 表名
+set 列名=修改后的值,...
+where 条件;
+update stu
+set age=20,name='李武'
+where no=2;
+5.3 删除数据
+delete from 表名
+where 条件;
+delete from stu
+where no=1;
+rollback;
+select * from stu;
+truncate table 表名;  --截断表
+truncate table stu;
+
+
+
+

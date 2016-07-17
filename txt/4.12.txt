@@ -1,0 +1,284 @@
+练习：
+创建一个学生表：
+学号sno,姓名sname,年龄sage
+create table student(
+sno varchar2(2),
+sname varchar2(10),
+sage number
+);
+修改表增加一列 生日sbirth
+alter table student
+add (sbirth date)
+修改表 修改列 sname，将类型改为
+varchar2(40)
+alter table student
+modify (sname varchar(40));
+
+删除表 
+drop table student;
+
+
+select * from student;
+插入一条数据
+11, zs
+12, ls, 20
+insert into student values(11,
+'zs',null);
+insert into student values(12,
+'ls',20);
+修改一条
+update student
+set sage=20
+where sname='zs'
+删除
+delete from student
+where sage=20;
+
+约束：数据的限制
+约束分类：
+1）主键
+2）外键
+3）唯一
+4）检查
+5）非空
+
+1、主键
+唯一标识一行数据，不能空，一个表
+最多一个主键，可以在一列或多列上
+创建主键
+
+1）创建表
+drop table student;
+create table student1(
+sno varchar2(10) 
+ --[constraints student1_pk]
+ primary key,  --列级约束
+sname varchar2(20)
+); 
+create table student2(
+sno varchar2(10), 
+sname varchar2(20),
+--[constraints student1_pk]
+ primary key(sno) --表级约束
+); 
+2）修改表
+create table student3(
+sno varchar2(10),
+sname varchar2(10)
+);
+alter table student3
+add primary key(sno);
+
+3）查看约束
+user_constraints
+user_cons_columns
+
+select * from user_constraints
+where table_name like 'STUDENT_';
+4）删除约束
+alter table student3
+drop constraints SYS_C006803;
+5）禁用约束
+alter table student2
+disable constraints SYS_C006802;
+6）启用约束
+alter table student2
+enable constraints SYS_C006802;
+
+2、唯一约束
+唯一标识一行数据，可以空，一个表
+可以有多个唯一约束，可以在一列或
+多列上创建唯一约束
+1）创建表
+create table student4(
+sno varchar2(10),
+sname varchar2(10),
+iden varchar2(10) unique
+);
+create table student5(
+sno varchar2(10),
+sname varchar2(10),
+iden varchar2(10),
+unique(iden)
+);
+2)修改表
+create table student6(
+sno varchar2(10),
+sname varchar2(10),
+iden varchar2(10)
+);
+alter table student6
+add unique(iden);
+
+3、检查约束
+判断列值是否符合要求，列值可以空，
+可以加多个检查约束
+1）创建表
+create table student7(
+sno varchar2(20),sname varchar2(10),
+sage number check(
+sage between 12 and 60),
+sgender varchar2(10) check(
+sgender='男' or sgender='女')
+);
+create table student8(
+sno varchar2(20),sname varchar2(10),
+sage number ,
+sgender varchar2(10), 
+check(sage between 12 and 60),
+check(sgender='男' or sgender='女')
+);
+2)修改表
+create table student9(
+sno varchar2(20),sname varchar2(10),
+sage number ,
+sgender varchar2(10)
+); 
+alter table student9
+add check(sage between 10 and 20);
+alter table student9
+add check(sgender='男' or sgender='女');
+4、非空约束
+1）创建表
+create table student10(
+sno varchar2(20),
+sname varchar2(10) not null
+);
+2）修改列定义
+alter table student10
+modify (sno varchar2(20) not null);
+
+5、外键约束
+主表：被引用的表
+从表：引用主表的具有外键的表
+
+dept: 主表
+emp：从表
+
+create table dept(
+did number primary key,
+dname varchar2(20)
+);
+
+保证列值要么在主表存在，要么空，
+可有多个外键，外键可在多列上创建 
+
+1）创建表
+create table emp(
+ename varchar2(20),
+dno number references dept(did)
+--[on delete {cascade | set null}]
+);
+create table emp(
+ename varchar2(20),
+dno number,
+foreign key(dno)references dept(did)
+--[on delete {cascade | set null}]
+);
+2)修改表
+select * from user_constraints
+where table_name='EMP';
+
+SYS_C006816
+alter table emp
+drop constraints SYS_C006816;
+alter table emp
+add foreign key(dno)
+references dept(did);
+
+insert into dept values(1,'sales');
+insert into emp values('zs',1);
+
+delete from dept where did=1;
+--select * from user_constraints
+--where table_name='DEPT';
+
+--select * from user_constraints
+--where r_constraint_name='SYS_C006815';
+
+alter table emp drop constraint
+SYS_C006817;
+alter table emp 
+add foreign key(dno)
+references dept(did)
+on delete set null;
+
+delete from dept where did=1;
+select * from emp;
+
+on delete cascade: 当主表删数据
+时，对应的从表数据一起删除，级联
+删除
+on delete set null: 当主表删除数据
+时，对应的从表外键列值清空
+
+练习：
+创建一个院系表department
+  dno 编号，主键
+  dname 院系名，非空
+create table department(
+dno varchar2(20) primary key,
+dname varchar2(20) not null
+);
+  
+创建一个学生表student
+  sno 学号，
+  sname 姓名，
+  sage 年龄
+  sgender 性别
+create table student(
+sno varchar2(20),
+sname varchar2(20),
+sage number,
+sgender varchar2(20)
+);  
+
+修改学生表，在sno列增加一个主键
+alter table student
+add primary key(sno);    
+修改学生表，在sname列增加一个非空
+约束
+alter table student
+modify (sname varchar2(20) not null);
+
+修改学生表，在sage列增加一个检查
+约束，20-50
+alter table student 
+add check(sage between 20 and 50);
+修改学生表，在sgender列增加一个检查
+约束，男或女
+alter table student
+add check(sgender='男' or sgender='女');
+
+
+修改学生表，增加身份号列id，
+唯一约束
+alter table student
+add (id varchar2(20) unique);
+修改学生表，增加院系编号列dno，
+外键，引用院系表的院系编号
+alter table student
+add (dno varchar2(20)
+references department(dno));
+
+select * from department;
+insert into department
+values(1,'sales');
+
+select * from student;
+insert into student
+values(1,'zs',18,'男',null,2);
+
+
+
+
+
+
+
+
+
+
+
+
+
+

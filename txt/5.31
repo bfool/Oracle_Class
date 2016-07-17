@@ -1,0 +1,259 @@
+内置函数
+
+1、字符函数
+1）ascii: 取ascii函数
+  select ascii('a'),
+  ascii('abc')
+  from dual;
+  
+2)chr(x): 按ascii转字符
+  select chr(97) from dual;  
+3)concat(x,y): 将y连接到x
+  ||
+  select concat('a','b') from dual;
+4)initcap(x): 将所有单词首字母转成
+大写，其余转成小写
+  select initcap('HOW are you')
+  from dual; 
+5)instr(x,find_string,start,
+occurence): 在x中从start位置开始
+搜索find_string第occurence次出现
+的位置
+ select instr('1234512345','345',
+ 1,2) from dual;
+6)length(x)：字符个数
+7)vsize(x)：字节长度
+  select length('a'),vsize('a'),
+  length('你好'),vsize('你好')
+  from dual;
+8)lower(x)
+9)upper(x)
+  select lower('xxYY'),upper('xxYY')
+  from dual;
+10)lpad(x,width,pad_string):
+从左侧按width拼字符串，长度不足
+补pad_string,默认补空格，如果x
+比width长，则从右侧多余截掉
+11)rpad(x,width,pad_string)  
+select lpad('a',5,'*'),
+lpad('a',5),
+lpad('abcdef',5),
+rpad('a',5,'*')
+from dual;
+12)ltrim(x,trim_string):从左侧
+去掉字符trim_string,默认去空格
+13)rtrim(x,trim_string):从右侧
+去掉字符trim_string,默认去空格
+14)trim(trim_string from x):从两
+侧去掉字符trim_string,默认去空格
+
+select ltrim('   abc   ') l,
+rtrim('   abc   ') r,
+trim('   abc   ') t
+from dual;
+
+15)nvl(x,value): 如果x为空，显示
+value，否则显示x
+create table t01(id number,
+name varchar2(20));
+insert into t01 values(1,null);
+select nvl(id,0),nvl(name,'noname')
+ from t01;
+
+16)replace(x,search_str,replace_str):
+在x中将search_str替换成replace_str
+
+' a b c '
+select replace(' a b c ',' ','')
+from dual;
+
+17)substr(x,start,length):
+从start开始取length个字符
+select substr('12345',2,2)
+from dual;
+
+2、数字函数
+1)abs(x): 取绝对值
+2）ceil(x): 取比x大的最小整数
+3）floor(x): 取比x小的最大整数
+ select ceil(1.5),floor(-1.5)
+ from dual;
+4)mod(x,y): 取余数
+5）round(x,y): 四舍五入，y指定
+小数位数
+6）trunc(x,y): 截断，y指定
+小数位数
+select  mod(100,8),
+round(1.567,2),
+trunc(1.567,2)
+from dual;
+
+max
+min
+avg
+count
+sum
+
+3、日期函数
+1)sysdate: 取系统当前日期
+select sysdate from dual;
+2)add_months(x,y): 返回x上加y个
+月后日期
+select add_months(sysdate,2)
+from dual;
+3)months_between(x,y): 返回x和y
+相差的月数
+
+select ceil(months_between(sysdate,
+to_date('1995-10-01','yyyy-mm-dd'))/12)
+from dual;
+create table stu(
+name varchar2(20),
+birth date,
+age number);
+
+insert into stu values(
+'雷小兰',
+to_date('1995-10-01','yyyy-mm-dd'),
+null);
+insert into stu values(
+'王伟',
+to_date('1995-10-31','yyyy-mm-dd'),
+null);
+insert into stu values(
+'王伟',
+to_date('1995-04-10','yyyy-mm-dd'),
+null);
+
+select * from stu;
+update stu
+set age=
+ceil(months_between(sysdate,
+birth)/12)
+
+select name,
+add_months(birth,age*12)-sysdate
+from stu;
+
+4)next_day(x,day):取相对于当前
+日期下一个day（星期几）的日期
+select next_day(sysdate,'星期二')
+from dual;
+
+5）last_day(x): 返回日期x所在月
+最后一天的日期
+6)round(x,unit): 四舍五入
+7）trunc(x,unit): 截断
+select round(sysdate,'mm'),
+round(sysdate,'dd'),
+trunc(sysdate,'mm'),
+trunc(sysdate,'dd')
+from dual;
+
+查询生日正好是月末（最后一天）的
+同学
+
+select * from stu
+where last_day(birth)=birth;
+
+select * from stu
+where trunc(birth,'mm')=birth;
+
+4、转换函数
+字符-〉日期
+字符-〉数字
+日期-〉字符
+数字-〉字符
+
+1)to_date(x,fmt):按fmt格式说明
+将x转成日期
+
+select to_date('1990-10-01',
+'yyyy-mm-dd') from dual;
+
+年：yyyy,year,YEAR,Year
+月: mm,MONTH,Month,MON,Mon
+日: dd,ddd,d,DAY,Day,DY,Dy
+时: hh24,hh
+分: mi
+秒: ss
+
+05,31-2016
+select to_date('05,31-2016','mm,dd-yyyy')
+from dual;
+
+2)to_char(x,fmt)
+2016/05/31 09:10
+select to_char(sysdate,
+'yyyy/mm/dd hh24:mi')
+from dual;
+
+3)to_number(x,fmt)
+9:如果x比格式中9少，相应用空
+0:如果x比格式中0少，0保留
+.：小数点
+,：千位分隔符
+$：美元货币符号
+L：本地货币符号
+
+12345，$12,345
+select to_char(12345,'$999,999'),
+to_char(12345,'L000,000')
+from dual;
+
+select to_number('￥012,345',
+'L000,000') from dual;
+
+4)decode(value,search_value1,
+result1,search_value2,result2,
+default)
+alter table stu 
+add gender number;
+select * from stu;
+update stu set gender=2
+where name='雷小兰';
+update stu set gender=1
+where name='王伟';
+select name,age,
+decode(gender,1,'男',2,'女','其他')
+from stu;
+
+case语句：
+语法一
+case var
+   when value1 then result1,
+   when value2 then result2,
+   else
+     缺省值
+end case
+select name,
+case gender
+   when 1 then '男'
+   when 2 then '女'
+   else '其他'
+end gender
+from stu;   
+
+语法二
+case
+  when 条件1 then result1   
+  when 条件2 then result2
+  else
+    缺省值
+end case    
+
+select name,
+case 
+   when gender=1 then '男'
+   when gender=2 then '女'
+   else '其他'
+end gender
+from stu;   
+
+5)translate(x,from_str,to_str)
+
+select translate(
+'12345',
+'1234567890',
+'qwertyuiop')
+from dual;

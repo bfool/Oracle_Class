@@ -1,0 +1,281 @@
+PLSQL：oracle数据编程语言
+
+程序结构：(匿名程序)
+declare
+  变量声明和赋初值
+begin
+  程序体
+  exception
+     异常捕获
+end;  
+
+变量声明：
+变量名 变量类型 [default 初值 
+  | := 初值];
+  
+  age number :=20;
+  
+变量赋值：
+  变量名 := 值;   
+  
+控制语句：
+分支控制语句：
+  IF语句：
+    if 条件 then 
+       条件满足执行语句
+    else
+       条件不满足执行语句
+    end if;
+  
+  CASE语句：
+    一：简单case语句
+    case 变量
+       when 值1 then ...
+       when 值2 then ...
+       else
+          ...
+    end case;
+ 
+    二：case 搜索语句
+    case
+      when 条件1 then ...
+      when 条件2 then ...
+      else
+         ...
+    end case;
+
+    定义变量s,分数，根据分数范围
+    输出ABCDE；
+    输出值：
+    dbms_output.put_line(显示内容);
+    
+    declare
+      s number:=82;
+    begin
+      case 
+        when s>=90 then 
+          dbms_output.put_line('A');
+        when s>=80 then 
+          dbms_output.put_line('B');
+        when s>=70 then 
+          dbms_output.put_line('C');
+        when s>=60 then 
+          dbms_output.put_line('D');
+        else
+          dbms_output.put_line('E');
+      end case;
+    end;         
+        
+    sqlplus:
+       程序后加 '/',执行符号
+       显示结果：
+         set serveroutput on
+      
+循环语句：     
+  FOR循环：
+    for 迭代变量 
+      in [reverse]start..end loop
+      程序
+    end loop;
+    
+    begin
+      for i in 1..10 loop
+        dbms_output.put_line(i);
+      end loop;
+    end;
+    
+    计算5的阶乘
+    declare
+      n number:=5;
+      b number:=1;
+    begin
+      for i in 1..n loop
+        b:=i*b;
+        dbms_output.put_line(b);      
+      end loop;
+    end;      
+  WHILE循环：
+    while 条件 loop
+      程序
+    end loop; 
+    
+    declare
+      n number:=5;
+      b number:=1;
+      i number:=1;
+    begin
+      while i<=n loop
+        b:=i*b;
+        i:=i+1;
+        dbms_output.put_line(b);      
+      end loop;
+    end;   
+  简单循环：
+    loop 
+      程序；
+      exit when 退出条件;
+      程序；      
+    end loop;      
+    
+    declare
+      n number:=5;
+      b number:=1;
+      i number:=1;
+    begin
+      loop
+        b:=i*b;
+        dbms_output.put_line(b);      
+        i:=i+1;
+        exit when i>n;
+      end loop;
+    end;   
+
+    累加，1..n
+    declare
+      n number:=5;
+      b number:=0;
+      i number:=1;
+    begin
+      loop
+        b:=i+b;
+        dbms_output.put_line(b);      
+        i:=i+1;
+        exit when i>n;
+      end loop;
+    end;   
+
+异常处理：
+   ***预定义异常：oracle定义好的
+   zero_divide    
+   declare 
+     i number;
+   begin
+     i:=10/0;
+     exception 
+       when zero_divide then
+         null;
+       when others then
+         null;
+   end;
+   
+   非预定义异常：错误码，没有定义
+     异常名
+   create table t01(id number
+     primary key);
+   insert into t01 values(1);
+   
+   declare
+     myexp exception;
+     pragma exception_init(myexp,-1);
+   begin
+     insert into t01 values(1);
+     exception 
+        when myexp then 
+          dbms_output.put_line('主键重复');
+   end;
+   
+   自定义异常
+   
+   declare
+     myexp exception;
+     age number:=1000;
+   begin
+     if age>150 then
+        raise myexp;
+     end if;
+     exception 
+       when myexp then 
+          dbms_output.put_line('年龄无效');
+   end;          
+   
+   ****动态自定义异常
+   declare
+     age number:=1000;
+   begin
+     if age>150 then
+       raise_application_error(
+       -20001,'年龄无效');
+     end if;
+     exception 
+       when others then 
+         dbms_output.put_line(sqlcode);
+         dbms_output.put_line(sqlerrm);
+   end;         
+         
+   函数：
+   sqlcode: 取错误码
+   sqlerrm: 取错误消息         
+
+游标：一种遍历结果集的方法
+游标定义
+使用游标：打开，取数据，关闭   
+
+使用for循环：
+declare
+  cursor c is select * from t01;
+begin
+  for i in c loop
+    dbms_output.put_line(i.id);
+  end loop;
+end;  
+
+
+      
+while循环
+declare
+  cursor c is select * from t01;
+  id number;
+begin
+  open c;
+  while c%ISOPEN loop
+    fetch c into id;
+    exit when  c%notFOUND;
+    dbms_output.put_line(id);  
+  end loop;
+  close c;
+end;  
+
+declare
+  cursor c is select * from t01;
+  id number;
+begin
+  open c;
+  fetch c into id;
+  while c%found loop
+    dbms_output.put_line(id);  
+    fetch c into id;
+  end loop;
+  close c;
+end;  
+      
+游标属性：
+ %found: 取到了数据
+ %notfound: 没取到数据
+ %isopen：游标是否已打开
+ %rowcount：当前处理行数      
+ 
+简单循环：
+declare
+  cursor c is select * from t01;
+  id number;
+begin
+  open c;
+  loop
+    fetch c into id;
+    exit when c%notFOUND;
+    dbms_output.put_line(id);  
+  end loop;
+  close c;
+end;  
+
+带参数的游标：
+declare
+  cursor c(n number) 
+    is select * from t01 
+    where id>n;
+begin
+  for i in c(5) loop
+    dbms_output.put_line(i.id);
+  end loop;
+end;  
+ 

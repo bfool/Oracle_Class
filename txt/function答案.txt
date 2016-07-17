@@ -1,0 +1,98 @@
+1．使用FOR循环语句编写plsql程序完成如下功能：给定任意数n，计算从1到n的累加和。
+declare
+   n number:=10;
+   s number:=0;
+begin
+   for i in 1..n loop
+      s:= s+i;
+   end loop;
+end;   
+2．使用while循环实现n的阶乘。
+declare
+   n number:=10;
+   s number:=1;
+   i number:=1;
+begin
+   while i<=n loop
+      s:=s*i;
+      i:=i+1;
+   end loop;
+end;   
+3．编写一个函数f_jc，要求如下：计算参数n的阶乘并返回;
+create or replace function f_jc(n number) 
+return number
+is
+  r number:=1;
+begin
+  for i in 1..n loop
+    r:=r*i;
+  end loop;
+  return r;
+end;
+4．编写一个过程p_jc，要求如下：计算参数n的阶乘并返回;
+create or replace procedure p_jc(n number,r out number) 
+is
+begin
+  r:=1;
+  for i in 1..n loop
+    r:=r*i;
+  end loop;
+end;
+
+5．编写一个函数f_add，要求如下：计算参数n1和n2的和并返回;
+create or replace function f_add(a number,b number) 
+return number
+is
+begin
+  return a+b;
+end;
+6．编写一个过程p_add，要求如下：计算参数n1和n2的和并返回;
+create or replace procedure p_add(a number,b number,r out number) 
+is
+begin
+  r:= a+b;
+end;
+7．编写一个函数f_sub，要求如下：计算参数n1和n2的差并返回;
+create or replace function f_add(a number,b number) 
+return number
+is
+begin
+  return a-b;
+end;
+8．编写一个过程p_sub，要求如下：计算参数n1和n2的差并返回;
+create or replace procedure p_add(a number,b number,r out number) 
+is
+begin
+  r:= a-b;
+end;
+9．创建一个数据库级触发器database_ddl_monitor，监控数据库上所有的DDL操作，如果发现是非工作时间（周一至周五 早8点-17点 为工作时间）直接抛出异常。
+create or replace trigger database_ddl_monitor
+before ddl
+on database
+declare
+  weekday varchar2(20);
+  weekhour varchar2(20);
+begin
+  weekday:=to_char(sysdate,'d');
+  weekhour:=to_char(sysdate,'hh24');
+  if weekday in ('1','7') or
+    (weekhour<'08' or weekhour>'17') then
+    raise_application_error(-20001,'非工作时间禁止DDL');
+  end if;
+end;  
+
+
+10．假设存在表：
+   create table stu(stuno number,stuname varchar2(20),age number);
+   请创建一个生成主键值的触发器stu_trig1，要求：创建一个插入数据前的触发器；为当前插入行生成stuno列的值，
+   值为表中stuno列最大值加1。
+
+create or replace trigger stu_trig1
+before insert 
+on stu
+for each row
+declare
+begin
+  select nvl(max(stuno),0)+1 into :new.stuno from stu;
+end;
+

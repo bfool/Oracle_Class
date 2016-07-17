@@ -1,0 +1,276 @@
+1、数据类型
+1.1 标量类型
+数字：
+   number
+   pls_integer,binary_integer: 
+     整型
+字符型：
+   char
+   varchar2：最长32k
+   clob
+日期类型： 
+   date
+   timestamp
+布尔型：
+   boolean      
+   
+
+1.2 复合类型
+%type：取表中字段类型定义变量
+  n t01.id%type;
+%rowtype: 取表(游标)记录类型定义
+变量
+  r t01%rowtype;
+1）记录类型
+基于表：
+  r t01%rowtype;
+基于游标：
+  cursor c is select name,age from t01;  
+  r c%rowtype;
+显式定义：
+  type 类型名 is record(
+    id number,
+    name varchar2(20)
+  );  
+  
+create table t01(id number,
+name varchar2(20),age number);
+insert into t01 values(1,'a',20);
+insert into t01 values(2,'b',20);
+  
+declare
+  r t01%rowtype;
+begin
+  r.id:=4;
+  r.name:='d';
+  r.age:=20;
+  insert into t01 values r;
+  
+  r.age:=21;
+  update t01 set row=r where
+  id=r.id;
+end;    
+select * from t01;  
+
+declare
+  cursor c is select name,age 
+  from t01;
+  r c%rowtype;
+begin
+  open c;
+  loop
+    fetch c into r;
+    exit when c%notfound;
+  end loop;
+  close c;
+end;    
+
+declare
+  r t01%rowtype;
+begin
+  select * into r from t01
+  where id=1;  
+end;
+2）数组
+type 类型名 is varray(长度) of
+数据类型;
+3）嵌套表
+type 类型名 is table of
+数据类型;
+
+declare
+  type ntype1 is varray(10) of
+  number;
+  type ntype2 is table of
+  number;
+  n1 ntype1:=ntype1();
+  n2 ntype2:=ntype2();
+begin
+  n1.extend(5);
+  n2.extend(5);
+  n1(1):=1;
+  n1(2):=2;
+  n1(3):=3;
+  n1(4):=4;
+  n1(5):=5;
+  
+  for i in 1..n1.count loop
+    dbms_output.put_line(n1(i));
+  end loop;
+  
+  for i in n1.first..n1.last loop
+    dbms_output.put_line(n1(i));
+  end loop;
+end;  
+  
+
+
+方法：
+count：函数，返回分配空间数目
+extend：过程，分配空间
+  extend：分配1个
+  extend(n): 分配n个
+first：函数，返回第一个下标
+next(n): 函数，返回相对于n的下一个
+下标
+prior(n)：函数，取上一个下标
+last：函数，返回最后一个下标
+limit：函数，返回最高下标    
+4）联合数组
+type 类型名 is table of 数据类型
+index by {pls_integer | varchar2(n)}
+
+declare
+ type t is table of number 
+ index by varchar2(20);
+ 
+ v t;
+ k varchar2(20);
+begin
+ v('aaaa'):=1; 
+ v('bbbb'):=2; 
+ 
+ for i in 1..v.count loop
+   if i=1 then
+     k:=v.first;
+   else
+     k:=v.next(k);
+   end if;
+   dbms_output.put_line(k);
+   dbms_output.put_line(v(k));
+ end loop;
+end;   
+
+2、批语句和动态SQL
+declare
+  t1 number;
+  t2 number;
+  cursor c is select * from dba_objects;
+  r c%rowtype;
+begin
+  select dbms_utility.get_time 
+  into t1 from dual;
+  open c;
+  loop
+    fetch c into r;
+    exit when c%notfound;
+    dbms_output.put_line(r.object_id);
+  end loop;
+  close c;
+  select dbms_utility.get_time 
+  into t2 from dual;
+  dbms_output.put_line(t2-t1);
+end;  
+28
+
+declare
+  t1 number;
+  t2 number;
+  cursor c is select * from dba_objects;
+  type rtype is table of c%rowtype;
+  r rtype;
+begin
+  select dbms_utility.get_time 
+  into t1 from dual;
+  open c;
+  fetch c bulk collect into r;
+  close c;
+  for i in 1..r.count loop
+    dbms_output.put_line(r(i).object_id);
+  end loop;
+  select dbms_utility.get_time 
+  into t2 from dual;
+  dbms_output.put_line(t2-t1);
+end;  
+
+create table t1
+as select rownum id,object_name
+from dba_objects where 1=2;
+create table t2
+as select rownum id,object_name
+from dba_objects where 1=2;
+
+
+declare
+  t1 number;
+  t2 number;
+begin
+  select dbms_utility.get_time 
+  into t1 from dual;
+
+  for i in 1..10000 loop
+    insert into t1 values(1,'xx');
+  end loop;
+  
+  select dbms_utility.get_time 
+  into t2 from dual;  
+  
+  dbms_output.put_line(t2-t1);
+end;  
+
+54
+
+declare
+  type ntype is table of number;
+  type vtype is table of varchar2(50);
+  ids ntype:=ntype();
+  names vtype:=vtype();
+  t1 number;
+  t2 number;
+begin
+  select dbms_utility.get_time 
+  into t1 from dual;
+
+  ids.extend(10000);
+  names.extend(10000);
+  
+  for i in 1..10000 loop
+    ids(i):=i;
+    names(i):='xx';
+  end loop;
+  
+  forall i in 1..10000
+   insert into t1 values(ids(i),names(i));
+
+  
+  select dbms_utility.get_time 
+  into t2 from dual;  
+  
+  dbms_output.put_line(t2-t1);
+end;  
+
+
+动态SQL：
+
+truncate table t1;
+create or replace function f1
+return number
+is
+begin
+  insert into t1 values(1,'xx');
+  return 0;
+end;
+
+declare
+ r number;
+begin
+ r:=f1;
+end; 
+select * from t1;
+  
+create or replace function f2(
+id number,name varchar2)
+return number
+is
+  s varchar2(1000);
+begin
+  s:='insert into t1 values(:1,:2)';
+  execute immediate s using id,name;
+  return 0;
+end;
+
+declare
+ r number;
+begin
+ r:=f2(2,'yyyy');
+end;   

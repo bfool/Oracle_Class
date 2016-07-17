@@ -1,0 +1,45 @@
+1、逻辑结构
+tablespace，表空间，包含多个数据文件
+   一个数据文件最多管理4 000 000块，
+如果块为8k，一个文件最大32g
+   一个表空间最多1022文件，表空间最大
+32t
+   oracle最多管理65536个数据文件，最大
+64*32t=2pb
+
+
+segment,段，指一段数据存储空间，一个段
+  可包含多个区extent，每个区可放在不同
+  文件上
+
+extent，区，给段分配空间的单位，是一组
+  连续的数据库块，区不能跨数据文件
+block，块，基本读写数据文件单位
+
+表：表段
+索引：索引段
+视图：没有段
+
+客户端工具：
+   sqlplus,oracle自带字符工具，维护
+   plsql developer，图形工具，第三方
+
+   sql developer,oracle自己开发图形
+  工具
+
+1、表空间
+select * from dba_tablespaces;
+
+系统表空间介绍：
+  system，系统表空间，存储数据库
+    核心字典表
+  sysaux，系统表空间辅助表空间，
+    存储组建的字典表
+  undotbs1，undo表空间
+    日志，redo
+    commit，rollback
+    un do：记录数据修改前旧数据
+    temp：临时表空间
+       临时表数据库，排序
+    users：用户表空间
+

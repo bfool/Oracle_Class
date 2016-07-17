@@ -1,0 +1,67 @@
+create user u01 identified by u01;
+grant dba to u01;
+
+create table test as
+select * from system.test;
+数据导出：
+
+使用sqlplus
+export.txt
+---------------------------
+set heading off
+spool c:\t01.txt
+select trim(id||','||name) from t01;
+spool off
+spool c:\t02.txt
+select trim(id||','||name) from t02;
+spool off
+exit
+
+sqlplus u01/u01 @c:\export.txt
+
+批量建表：
+createtable.txt
+--------------------------
+create table t01(id number,
+name varchar2(20));
+create table t01(id number,
+name varchar2(20));
+exit;
+
+sqlplus u01/u01 @c:\createtable.txt
+
+
+导入数据：
+sqlldr: 实现文本文件导入
+
+编写导数据控制文件：
+loadt01.ctl
+------------------
+load data
+infile 'c:\t01.txt'
+into table t01
+append
+fields terminated by ','  
+(
+id,
+name
+)
+
+loadt02.ctl
+------------------
+load data
+infile 'c:\t02.txt'
+into table t02
+append
+fields terminated by ','  
+(
+id,
+name
+)
+
+
+导入数据批处理文件
+load.bat
+---------------------------
+sqlldr u01/u01 control=c:\loadtest.txt skip=1
+sqlldr u01/u01 control=c:\loadtest1.txt skip=1

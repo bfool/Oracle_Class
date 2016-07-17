@@ -1,0 +1,246 @@
+逻辑结构：
+表空间、段、区、块
+
+创建一个表空间tbs，包含两个文件，
+大小10M
+create tablespace tbs
+datafile
+'c:\tbs01.dbf' size 10M,
+'c:\tbs02.dbf' size 10M;
+
+修改tbs，增加一个文件，10M
+alter tablespace tbs
+add datafile
+'c:\tbs03.dbf' size 10M;
+修改最后增加的文件，改成50M
+alter database
+datafile 'c:\tbs03.dbf'
+resize 50M;
+修改最后增加文件，加自动扩展
+alter database 
+datafile 'c:\tbs03.dbf'
+autoextend on next 10M;
+删除表空间
+drop tablespace tbs
+including contents 
+and datafiles;
+
+1、用户
+1.1 查询
+超级用户：具有sysdba权限的用户
+  sysdba是最大的权限
+  
+  口令文件：
+    C:\ora11g\product\11.2.0\
+    dbhome_1\database\pwdmysid.ora
+    
+  重建： 
+    orapwd file=  password=xxxxx
+    默认只有sys用户
+
+  select * from v$pwfile_users;
+
+普通用户：
+  select * from dba_users;
+  
+  sys: 具有sysdba权限用户，系统
+    管理员
+  system：具有dba角色，管理员
+  
+  default_tablespace: 缺省表空间
+     用户可使用多个表空间，其中一
+     个是缺省表空间，创建表时如果
+     没有指定表空间就使用缺省的
+     create table t01(xxx);
+     create table t01(xxx)
+       tablespace users;
+  temporary_tablespace: 临时表空间
+     临时表数据、排序  
+1.2 创建
+create user 用户名
+identified by 密码
+default tablespace 缺省表空间名
+temporary tablespace 临时表空间
+quota {nM|unlimited} on 表空间1
+quota {nM|unlimited} on 表空间2
+...
+;
+quota: 给用户分配表空间可以使用
+  的份额
+
+--使用系统默认
+create user u01 identified by
+u01;
+select * from database_properties;
+
+--使用自定义表空间
+create temporary tablespace mytmp
+tempfile 'c:\mytmp.dbf' size 10M;
+
+create user u02 
+identified by u02
+default tablespace tbs
+temporary tablespace mytmp
+quota unlimited on tbs
+quota 100M on users;
+
+--查询可用的表空间
+select * from dba_ts_quotas
+where username='U02';
+
+
+
+1.3 修改
+alter user 用户名
+{
+identified by 密码 
+| default tablespace 缺省表空间名
+| temporary tablespace 临时表空间
+| quota {nM|unlimited} on 表空间1
+| account unlock
+};
+1.4 删除
+drop user 用户名 cascade;
+cascade：如果用户有表，必须使用
+ cascade，表示级联删除用户所有表
+
+练习：
+创建一个用户u1,密码u1,缺省表空间
+tbs；
+create user u1
+identified by u1
+default tablespace tbs;
+修改用户的表空间使用权，在tbs上
+没有限制，在users可最大使用50M
+alter user u1
+quota unlimited on tbs
+quota 50M on users;
+修改用户状态，解锁
+alter user u1
+account unlock;
+删除用户 
+drop user u1 cascade;
+
+2、权限
+2.1 查询
+--查询系统权限
+select * from dba_sys_privs
+where grantee='U02';
+--查询对象权限
+select * from dba_tab_privs
+where grantee='U02';
+--查询具备角色
+select * from dba_role_privs
+where grantee='U02';
+2.2 系统权限
+在系统中可执行某些语句的权力。
+1）常见权限
+create session: 创建会话权限
+create table
+create view
+create sequence: 创建序列，递增
+   数字
+create procedure
+
+2）授权
+授权者： 系统管理员
+   sys  system
+grant 权限1,... to 被授权者(用户
+或角色)
+[with admin option]；
+with admin option：将权限授予给
+  用户的同时，将该权限的管理权限
+  一并授予
+3)回收权限
+revoke 权限1,... from 被授权者
+
+
+练习：
+查询u01拥有哪些系统权限；
+select * from dba_sys_privs
+where grantee='U01';
+授予u01用户创建会话、创建表权限 
+grant create session,
+create table 
+to u01;
+回收u01所有权
+revoke create session,
+create table 
+from u01;
+
+2.3 对象权限
+数据库对象：
+    表、视图、函数、过程 等
+对象权限：对象的使用权限
+表：select，insert，update，delete    
+函数或过程：execute（执行权限）
+
+1）授权
+grant 权限1,... on [schema.]对象名
+to 被授权者
+[with grant option];
+
+schema: 一个用户拥有的数据库对象
+集合，schema默认就是用户名;
+
+
+grant create session,create table
+to u02;
+
+grant create session,create table
+to u01;
+
+grant select,insert on u02.t01
+to u01;
+
+2）回收
+revoke 权限1,... on 对象
+from 被授权者;
+练习：
+查询u01拥有哪些对象权限；
+select * from dba_tab_privs
+where grantee='U01';
+回收u01用户所有对象权限 
+revoke select,insert on u02.t01
+from u01;
+
+授予u01查看u02的t01表
+grant select on u02.t01
+to u01;
+3、角色
+一组权限的集合
+
+系统角色：
+  connect：包含一个create session
+  resource: 包含几个常见权限
+    隐含一个权限unlimited tablespace
+  dba: 管理员角色
+     system具备该角色
+     
+
+--查询系统权限
+select * from dba_sys_privs
+where grantee='CONNECT';
+--查询对象权限
+select * from dba_tab_privs
+where grantee='CONNECT';
+--查询具备角色
+select * from dba_role_privs
+where grantee='CONNECT';
+
+自定义角色：
+create role 角色;
+grant 权限  to 角色;
+grant 角色  to 用户;
+
+create role r1;
+grant create session,
+create table,
+create view
+to r1;
+
+create user u03 
+identified by u03;
+
+grant r1 to u03;
+

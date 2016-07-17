@@ -1,0 +1,35 @@
+create table tblclass(clano varchar2(5) primary key,claname varchar2(30));
+insert into tblclass values('r1001','13软件1班');
+insert into tblclass values('r1002','13软件2班');
+commit;
+
+create table tblcourse(couno varchar2(5)primary key,couname varchar2(30));
+insert into tblcourse values('c01','操作系统');
+insert into tblcourse values('c02','数据库');
+insert into tblcourse values('c03','网络基础');
+commit;
+
+create table tblstudent(stuno varchar2(5) primary key,stuname varchar2(30),stuage number,clano varchar2(5) references tblclass(clano));
+insert into tblstudent values('s1001','黎明'  ,18,'r1001');
+insert into tblstudent values('s1002','张晓刚',21,'r1001');
+insert into tblstudent values('s1003','赵晓慧',20,'r1002');
+commit;
+
+create table tblscore(stuno varchar2(5) references tblstudent(stuno),couno varchar2(5) references tblcourse(couno),score number(5,2));
+insert into tblscore values('s1001','c01',80);
+insert into tblscore values('s1001','c02',75);
+insert into tblscore values('s1001','c03',85);
+insert into tblscore values('s1002','c01',90);
+insert into tblscore values('s1002','c02',95);
+insert into tblscore values('s1002','c03',95);
+insert into tblscore values('s1003','c01',90);
+insert into tblscore values('s1003','c02',85);
+insert into tblscore values('s1003','c03',85);
+commit;
+
+create table tblemp(id number(5) primary key,name varchar2(20),mid number(5) references tblemp(id));
+insert into tblemp values(1,'张亮',null);
+insert into tblemp values(2,'李群',1);
+insert into tblemp values(3,'王亦凡',1);
+insert into tblemp values(4,'崔苗',2);
+commit;

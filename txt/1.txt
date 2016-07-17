@@ -1,0 +1,79 @@
+1、配置监听器
+   netca
+   lsnrctl status
+
+2、网络服务名
+   netca
+   
+   ipconfig
+   
+   C:\oracle11g\product\11.2.0\dbhome_1\NETWORK\ADMIN\tnsnames.ora
+
+
+3、plsql developer
+   username:   system 或 sys
+   password：  oracle
+   Database：  网络服务名  --- 如果空，连接本机数据库
+   Connect as：除了sys用户外，都选normal，sys用户选sysdba
+
+
+设置-》控制面板-》管理工具-》事件查看器  清除事件
+设置-》控制面板-》管理工具-》服务  OracleServiceMYSID 点右键重启
+
+lsnrctl status
+
+
+select * from dba_tablespaces;
+表空间：
+
+区管理方式：extent_management
+   dmt: dictionay managed tablespace,字典管理表空间
+      依赖 fet$(free extent) uet$(used extent)
+      串行分配，效率不高     
+   
+   lmt: local mnaged tablespace,本地管理
+     依赖每个数据文件头，用位图记录区分配信息、
+     
+段空间管理方式：segment_space_management
+   mssm: 手动段空间管理
+     freelist：自由链表，记录可以插入新数据的块
+     pctfree: 预留空闲空间百分比，默认10%
+     pctused: 控制写满数据块在删除删除之后，数据占块空间的40%以下可以重新回到链表，默认40% 
+     
+     
+   assm: 自动段空间管理
+     依赖位图信息来查找能插入数据的块
+     
+   
+2、表空间创建
+2.1 创建持久表空间
+create tablespace 表空间名
+datafile 
+'数据文件全路径' size 文件初始大小 autoextend on next 扩展大小,
+'数据文件全路径' size 文件初始大小 autoextend on next 扩展大小;
+
+C:\ora11g\oradata\mydb
+
+
+2.2 创建undo表空间
+create undo tablespace 表空间名
+datafile 
+'数据文件全路径' size 文件初始大小 autoextend on next 扩展大小,
+'数据文件全路径' size 文件初始大小 autoextend on next 扩展大小;
+
+2.1 创建临时表空间
+create temporary tablespace 表空间名
+tempfile 
+'数据文件全路径' size 文件初始大小 autoextend on next 扩展大小,
+'数据文件全路径' size 文件初始大小 autoextend on next 扩展大小;
+
+练习：
+1）创建持久表空间 test1，增加两个数据文件，每个文件10M，自动扩展，每次扩5m；
+2）创建临时表空间 test2，增加两个数据文件，每个文件10M，自动扩展，每次扩5m；
+
+
+
+
+
+
+     

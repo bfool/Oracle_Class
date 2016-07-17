@@ -1,0 +1,187 @@
+1、为什么学Oracle
+
+开发：sql 和 plsql
+dba：数据库管理员
+     
+小型机：
+ibm
+hp
+oracle
+  
+
+unix系统：
+  ibm ，aix
+  hp，hp-unix
+  oracle，solaris 
+
+linux: redhat
+       
+数据库：
+  oracle，ocp，ocm
+  db2: ibm
+  sqlserver,微软
+  mysql：oracle
+
+app server：
+  weblogic，oracle
+  websphere，ibm
+2、oracle数据库
+10g 2003
+11g 2007（主流）
+12c 2013
+
+3、考核
+1）平时成绩 100，折成30分
+   考勤+课堂表现： 24
+   实验：40分，16次课
+   测验：36分
+
+2）期末 70
+
+迟到早退，等同于旷课，一次扣8分
+打游戏、看电影，和课程无关，一次扣10分
+
+
+4、体系结构
+oracle组成：
+
+4.1 数据库 
+database: 存数据的仓库
+    一堆文件
+     
+    文件组成：
+    数据文件：存数据，表数据、索引数据
+        以块为单位，默认8k
+    日志文件：记录数据库变化，主要用
+        于数据库恢复
+        “日志先行”
+    控制文件：号称“大脑”
+
+4.2 实例
+instance : 一组进程 + SGA(内存)
+    进程： 
+      dbwn: 写数据文件
+      lgwr：负责写日志文件
+      smon
+      pmon
+      ckpt
+    sga区：system global area
+      共享内存区
+      
+      database buffer cache：
+         数据块缓冲区
+         lru：least recent used
+         lru辅助
+         lruw：写出
+
+      log buffer：日志缓冲区
+         写出条件：
+            commit；
+            每3秒
+            满1/3
+            写数据文件前先写日志
+            
+         
+      java pool：运行jvm
+      large pool：
+          并行查询、并行数据备份
+      stream pool：
+          数据同步
+
+      shared pool:共享池
+      select name from u01 
+      where id=1;      
+      select name from u01 
+      where id=2;
+      select Name from u01 
+      where id=1;
+
+      preparedStatment
+      select name from u01 
+      where id=?;      
+      Statement
+      sql执行步骤
+      解析
+         以sql文本计算hash值，根据该
+      值搜索共享池
+         语法
+         语义：表、列、权限
+         估算所有路径成本，选成本最低
+      的执行计划
+         以sql文本计算hash值，根据该
+      值保存共享池  
+      
+      绑定变量 
+             
+      执行
+      取数据
+
+
+      硬解析，hard parse
+      软解析，soft parse
+
+
+   pga：process global area，进程私有
+内存
+
+
+体系结构
+   ***数据库：数据文件、日志文件和控制文件
+   实例：
+     进程：***dbwn（写数据文件）
+           ***lgwr(写日志文件)
+           smon,pmon,ckpt,arcn
+     sga:
+        database buffer cache,数据块
+      缓冲区
+        shared pool，共享池
+        log buffer，日志缓冲区
+ 
+        large pool，大池
+        java pool，java池
+        stream pool，流池
+     pga：进程内存区，私有
+
+网络配置：
+   监听器：
+      配置文件：
+         listener.ora
+         C:\ora11g\product\11.2.0\
+          dbhome_1\NETWORK\ADMIN
+LISTENER =
+  (DESCRIPTION_LIST =
+    (DESCRIPTION =
+      (ADDRESS = 
+      (PROTOCOL = TCP)
+      (HOST = ip)
+      (PORT = 1521))
+    )
+  )
+ 
+   客户端连接：
+    连接本地数据库
+    sqlplus system/oracle
+
+    连接远程数据库
+    sqlplus system/oracle@ip:1521/数据库名
+
+    配置网络服务名：
+    netca
+    配置文件 tnsnames.ora
+    C:\ora11g\product\11.2.0\
+          dbhome_1\NETWORK\ADMIN
+
+
+XXXX =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = 
+       (PROTOCOL = TCP)
+       (HOST = j2211)
+       (PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = mydb)
+    )
+  )
+    sqlplus system/oracle@xxxx

@@ -1,0 +1,194 @@
+命名程序：存储在数据库内部
+存储过程
+函数
+包
+触发器
+
+1、存储过程
+1）创建
+create or replace procedure 过程名
+[(参数名 [in |out |in out] 类型
+:=缺省值,...)]
+is
+[pragma autonomous_transaction]
+   定义变量;
+begin
+   实现语句;
+   exception 
+     异常处理;
+end;        
+
+in: 默认，输入参数
+out：输出参数
+in out: 既做输入也做输出
+
+pragma autonomous_transaction：
+事务自治，独立于外部事务
+2）查询
+select * from dba_procedures;
+select * from dba_source;--源代码
+3）调用
+通过匿名程序调用：
+declare
+  ...
+begin
+  p1(x1,x2,...)  
+end;  
+
+4）删除
+drop procedure xxxx;
+
+阶乘，带一个参数n，返回阶乘结果
+create or replace procedure p_jc
+(n number,r out number)
+is
+begin
+  r:=1;
+  for i in 1..n loop
+    r:=r*i;
+  end loop;
+end;
+
+查看错误方法：
+plsql developer:
+  reports->pl sql->compilation errors
+sqlplus:
+  show errors
+  edit
+  /
+
+declare 
+  r number;
+begin
+  p_jc(5,r);
+  dbms_output.put_line(r);
+end;        
+
+两个数据相加，返回和
+create or replace procedure p_add
+(a number,b number,c out number) 
+is 
+begin
+  c:=a+b;
+end;
+
+select * from dba_procedures
+where object_name='P_ADD';
+select * from dba_source
+where name='P_ADD';
+
+2、函数
+1）创建
+create or replace function 过程名
+[(参数名 [in |out |in out] 类型
+:=缺省值,...)]
+return 类型
+is
+[pragma autonomous_transaction]
+   定义变量;
+begin
+   实现语句;
+   return 返回值;
+   exception 
+     异常处理;
+end;        
+
+2）调用
+declare
+
+begin
+  返回值变量:=函数(x1,..);
+end;
+
+select xxx(1,2) from dual;
+
+3)删除
+drop function xxx;
+
+阶乘：
+create or replace function f_jc
+(n number)
+return number
+is
+  r number:=1;
+begin
+  for i in 1..n loop
+    r:=r*i;
+  end loop;
+  return r;
+end;
+
+两个数相加
+create or replace function f_add
+(a number,b number) 
+return number
+is 
+begin
+  return a+b;
+end;
+
+
+declare
+  r number;
+begin
+  r:=f_jc(5);
+  dbms_output.put_line(r);
+end;    
+
+select f_jc(5) from dual;
+
+3、包
+包规范: 声明过程或函数，定义变量
+
+包体：对包规范声明的过程或函数提供
+具体实现
+
+create or replace package mypack
+is
+   procedure p_jc(n number,
+   r out number);
+   procedure p_add(a number,
+   b number,c out number);
+   function f_jc(n number)
+   return number;
+   function f_add(a number,
+   b number)return number;   
+end;
+
+create or replace package body mypack
+is
+  procedure p_jc(n number,
+  r out number)
+  is
+  begin
+    r:=1;
+    for i in 1..n loop
+      r:=r*i;
+    end loop;
+  end;
+  procedure p_add(a number,
+  b number, c out number)
+  is
+  begin
+    c:=a+b;
+  end;
+  function f_jc(n number)
+  return number
+  is
+    r number:=1;
+  begin
+    for i in 1..n loop
+      r:=r*i;
+    end loop;
+    return r;
+  end;
+  function f_add(a number,b number)
+  return number
+  is 
+  begin
+    return a+b;
+  end;
+end;
+
+select f_jc(5) from dual;
+select mypack.f_jc(5) from dual;

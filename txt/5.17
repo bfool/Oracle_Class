@@ -1,0 +1,193 @@
+schema：
+a collection of database object
+owned by a user.
+
+oracle：schema名字和用户名一样
+select * from u1.t01;
+
+sqlserver: schema和用户没有一对
+一关系，多个用户可以使用一个同一
+个schema
+
+schema对象：
+table：
+堆表：无序，插入数据快
+索引表：按索引的数据存储方式存储
+表数据，查询快，数据修改慢
+   适合小表（表列少，行少，查询频），
+   且表数据基本不变
+   
+   create table xxx(xxx)
+   organization index;
+簇表:
+   按关联列将多个表的数据进行分类
+   存储，按关联列查询速度快，否则
+   速度慢
+分区表：大表拆分小表
+外部表：结构在数据库内，数据在
+外部
+index
+sequence: 自增的数字序列
+view
+synonym：同义词
+database Link：数据库链接
+
+materialized view：物化视图
+过程
+函数
+触发器
+包
+
+
+1、序列
+sequence:自增数字
+
+创建
+create sequence 序列名
+start with 起始值(默认1)
+increment by 递增值（默认1）
+minvalue 最小值
+maxvalue 最大值
+no cycle|cycle
+no order|order
+cache n|nocache;
+
+order：先取的进程取到值小
+cache：缓存，预分配
+    可以设置1000
+create sequence s1 cache 1000;
+
+
+修改 
+alter sequence 序列名
+increment by 递增值（默认1）
+minvalue 最小值
+maxvalue 最大值
+no cycle|cycle
+no order|order
+cache n|nocache;
+
+查询
+select * from dba_sequences
+where sequence_name='S1';
+
+使用
+伪列：
+nextval：取下一个值，序列使用时
+必须先调用该列，相当于初始化
+currval: 取序列在当前会话中取得
+最后一个值
+select s1.nextval from dual;
+select s1.currval from dual;
+
+create table t1(
+id number primary key,
+name varchar2(20)
+);
+insert into t1 values(s1.nextval,
+'a');
+
+declare
+n number;
+begin
+insert into t1 values(s1.nextval,
+'a') returning id into n;
+dbms_output.put_line(n);
+end;
+
+删除
+drop sequence 序列名;
+
+2、视图
+view：视图
+视图就是定义好的查询语句，也称为
+虚表，视图不存数据
+
+创建
+create or replace [force]view
+ 视图名
+as 子查询
+[with read only|with check option]
+
+force: 基表没有的情况下强制创建
+视图，视图只有在基表创建后才可用
+ 
+with read only：只读，不能通过视图
+修改表数据
+
+with check option：通过视图修改
+数据时，只有数据满足创建视图时
+子查询的条件语句才可以
+
+create table t2(id number primary key,
+name varchar2(20),
+sal number);
+create view v1
+as select * from t2;
+select * from v1;
+insert into v1 values(1,'a',8000);
+select * from t2;
+
+create view v2(username,salary)
+as select name,sal from t2;
+insert into v2 values('b',8000);
+select * from v2;
+
+create view v3
+as select * from t2 
+where sal>5000
+with check option;
+insert into v3 values(2,'a',8000);
+insert into v3 values(3,'b',4000);
+
+查询
+select * from dba_views
+where view_name='V3';
+删除
+drop view 视图;
+
+
+3、同义词
+synonym：别名
+
+创建
+create synonym 同义词名 for 对象名;
+create synonym t2s1 for t2;
+查询 
+select * from dba_synonyms
+where synonym_name='T2S1';
+删除
+drop synonym 同义词名;
+
+4、数据库链接
+database link:数据库之间桥梁
+
+select * from A;
+select * from B@L1;
+
+网络服务名：包含连接数据库的
+  ip，port，数据库名
+
+
+创建
+create [public] database link 链接名
+connect to 用户
+identified by 密码
+using '网络服务名'；
+
+create public database link link1
+connect to u1
+identified by u1
+using 'mydb';
+
+查询
+select * from dba_db_links;
+
+select * from u1t01@link1;
+create synonym r_u1t01 for u1t01@link1;
+
+select * from r_u1t01;
+删除  
+drop database link 数据库链接名;
+
+
